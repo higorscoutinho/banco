@@ -109,7 +109,7 @@ const $ = (s)=>document.querySelector(s);
 const P = new URLSearchParams(location.search);
 const DEF = {show:false,screen:"setup",typed:"",amount:"",pass:0,scroll:0,toast:null,
   payer:"Higor Coutinho",payerCpf:"123.456.789-00",saldo:"5.000,00",bank:{nome:"Digi",dest:"PLUS",c1:"#5b21d9",c2:"#c8f542",logo:""},keys:{email:"",tel:"",cpf:""},msg:"",
-  dest:{name:"Maria Souza",cpf:"111.222.333-44",bank:"Banco Zoeira S.A.",keyType:"cpf",key:"111.222.333-44"},
+  dest:{name:"Maria Souza",cpf:"111.222.333-44",bank:"Banco Nubank S.A.",keyType:"cpf",key:"111.222.333-44"},
   rid:"",rdt:"",cfg:{scale:P.get("scale")||0.85,pos:P.get("pos")||"br",mx:40,my:30}};
 let S = JSON.parse(JSON.stringify(DEF)), lastKey="", lastScreen="";
 
@@ -200,7 +200,11 @@ receipt:(s)=>`<div class="hdr"><div class="back">‹</div><div style="margin-lef
    <div class="rec-row"><span>Nome</span><span>${s.dest.name}</span></div>
    <div class="rec-row"><span>CPF</span><span>${maskCpf(s.dest.cpf)}</span></div>
    <div class="rec-row"><span>Instituição</span><span>${s.dest.bank}</span></div>
-   <div class="stamp">🎭 <b>SIMULAÇÃO · BRINCADEIRA</b><br>${esc(s.msg)||bn(s)+' é um app de zoeira. Nenhuma transferência real foi feita.'}</div>
+   <div class="stamp"></b><br>${esc(s.msg)||bn(s)+' Em caso de dúvidas entre em contato através dos nossos canais de atendimento, e informe o ID da transação presente neste comprovante.
+SAC CAIXA: 0800 726 0101
+Pessoas com deficiência auditiva: 0800 726 2492
+Ouvidoria: 0800 725 7474
+Help Desk CAIXA: 0800 726 0104'}</div>
    <div style="height:40px"></div></div>`
 };
 function confirmView(s,pwd,loading){
