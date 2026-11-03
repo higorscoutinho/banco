@@ -20,15 +20,35 @@
       if (bc) bc.onmessage = (e) => cb(e.data);
       window.addEventListener("storage", (e) => { if (e.key === LS && e.newValue) cb(JSON.parse(e.newValue)); });
       if (remote) {
+        // O Firebase manda só o trecho que mudou (path + data): mantemos o estado completo aqui.
+        let cur = {};
+        const setPath = (obj, path, val) => {
+          const parts = path.split("/").filter(Boolean);
+          if (!parts.length) return val;
+          let o = obj;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (typeof o[parts[i]] !== "object" || o[parts[i]] === null) o[parts[i]] = {};
+            o = o[parts[i]];
+          }
+          const k = parts[parts.length - 1];
+          if (val === null || val === undefined) delete o[k]; else o[k] = val;
+          return obj;
+        };
         const es = new EventSource(url(room));
-        const h = (ev) => {
+        const apply = (ev, merge) => {
           try {
             const m = JSON.parse(ev.data);
-            if (m && m.path === "/" && m.data) cb(m.data);
+            if (!m || typeof m.path !== "string") return;
+            if (merge && m.data && typeof m.data === "object") {
+              Object.keys(m.data).forEach((k) => { cur = setPath(cur, m.path + "/" + k, m.data[k]); });
+            } else {
+              cur = setPath(cur, m.path, m.data) || {};
+            }
+            cb(JSON.parse(JSON.stringify(cur)));
           } catch (e) {}
         };
-        es.addEventListener("put", h);
-        es.addEventListener("patch", h);
+        es.addEventListener("put", (ev) => apply(ev, false));
+        es.addEventListener("patch", (ev) => apply(ev, true));
       }
     }
   };
