@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Overlay Pix</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --p:#5b21d9; --p2:#7c3aed; --pd:#3b0f9e; --lime:#c8f542; --ink:#17132a; --mut:#6b6785;
+  --bg:#f4f2fb; --line:#e6e2f3; --red:#d6334a; --ok:#18a957;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:transparent;overflow:hidden;font-family:-apple-system,"SF Pro Text","Inter","Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+#stage{position:fixed;inset:0;pointer-events:none}
+#wrap{position:absolute;width:414px;height:868px;transform-origin:bottom right;
+  transition:transform .9s cubic-bezier(.2,.9,.25,1.05), opacity .4s}
+#wrap.down{transform:translateY(130%) scale(var(--s,1))!important;opacity:0}
+.phone{position:relative;width:414px;height:868px;border-radius:64px;background:linear-gradient(145deg,#2a2a33,#0c0c10 40%,#1d1d25);
+  padding:12px;box-shadow:0 0 0 2px #4a4a55 inset,0 0 0 1px #000,0 30px 80px rgba(0,0,0,.55),0 0 40px rgba(124,58,237,.25)}
+.phone:before,.phone:after{content:"";position:absolute;width:4px;background:#2c2c35;border-radius:3px}
+.phone:before{left:-4px;top:150px;height:64px;box-shadow:0 90px 0 #2c2c35}
+.phone:after{right:-4px;top:200px;height:96px}
+.screen{position:relative;width:390px;height:844px;border-radius:52px;overflow:hidden;background:#fff}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:34px;border-radius:20px;background:#000;z-index:50}
+.status{position:absolute;top:0;left:0;right:0;height:54px;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:6px 34px 0 42px;font-weight:600;font-size:16px}
+.status.light{color:#fff}
+.status svg{height:12px;margin-left:5px;fill:currentColor}
+.home-ind{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#17132a;opacity:.85;z-index:60}
+.light-ind .home-ind{background:#fff}
+#view{position:absolute;inset:0;padding-top:54px;display:flex;flex-direction:column}
+.light-ind #view{padding-top:0}
+.light-ind .hero{padding-top:66px!important}
+.enter{animation:enter .35s ease both}
+@keyframes enter{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
+.fade{animation:fade .35s ease both}@keyframes fade{from{opacity:0}to{opacity:1}}
+/* ---------- componentes ---------- */
+.logo{font-weight:800;letter-spacing:-.5px;font-size:24px;color:#fff}
+.logo b{color:var(--lime);font-weight:900}
+.logo img{height:30px;display:block;max-width:170px;object-fit:contain}
+.logo.dark{color:var(--p)}.logo.dark b{color:var(--accd)}
+.hdr{display:flex;align-items:center;gap:10px;padding:8px 20px 14px}
+.hdr .back{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:var(--p)}
+.title{font-size:30px;font-weight:700;letter-spacing:-.8px;padding:6px 22px 14px;line-height:1.1}
+.hdr-t{font-size:17px;font-weight:600}
+.cta{margin:0 20px 34px;height:52px;border-radius:16px;background:var(--p);color:#fff;font-weight:700;font-size:17px;display:grid;place-items:center}
+.cta.lime{background:var(--lime);color:var(--onacc,#17132a)}
+.cta.dis{background:var(--tint2);color:#a29cbd}
+.chip{padding:8px 13px;border-radius:20px;background:var(--tint);color:var(--p);font-weight:700;font-size:13px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;margin:0 18px 12px;padding:14px 16px}
+.lbl{font-size:12px;color:var(--mut)}
+.val{font-size:15px;font-weight:600;margin-top:2px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.sep{height:1px;background:var(--line);margin:12px 0}
+/* keypad */
+.keypad{margin-top:auto;background:#d4d1e4;padding:9px 8px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.keypad div{height:50px;border-radius:9px;background:#fff;box-shadow:0 1px 0 #8f8aa6;display:grid;place-items:center;font-size:25px;line-height:1}
+.keypad small{display:block;font-size:8px;letter-spacing:2px;color:#555;margin-top:-1px;text-align:center}
+.keypad .ghost{background:transparent;box-shadow:none}
+.qwerty{margin-top:auto;background:#d4d1e4;padding:9px 4px 30px}
+.qwerty .r{display:flex;justify-content:center;gap:5px;margin-bottom:10px}
+.qwerty .r i{font-style:normal;width:34px;height:42px;border-radius:6px;background:#fff;box-shadow:0 1px 0 #8f8aa6;display:grid;place-items:center;font-size:20px}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(10,6,25,.55);z-index:20}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:26px 26px 0 0;z-index:30;}
+.enter .sheet{animation:up .38s cubic-bezier(.2,.9,.3,1) both}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet h4{font-size:17px;font-weight:600;padding:22px 22px 14px;display:flex;justify-content:space-between;border-bottom:1px solid var(--line)}
+/* toast */
+.toast{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:24px;font-size:14px;font-weight:600;z-index:70;white-space:nowrap;animation:toast 2.6s ease both}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-14px)}10%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
+.caret:after{content:"";display:inline-block;width:2px;height:1em;background:var(--p);margin-left:1px;vertical-align:-2px;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--tint2);border-top-color:var(--p);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.dots{display:flex;justify-content:center;gap:18px;padding:30px 0 16px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid #b9b2d6}
+.dots i.on{background:var(--ink);border-color:var(--ink);transform:scale(1.05)}
+.ico{width:40px;height:40px;border-radius:14px;background:var(--tint);display:grid;place-items:center;font-size:19px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:4px 18px 8px;text-align:center;font-size:11.5px;font-weight:600}
+.grid4 .ico{width:100%;height:56px;border-radius:18px;font-size:22px;margin-bottom:6px}
+.hero{background:linear-gradient(160deg,var(--pd),var(--p) 55%,var(--p2));color:#fff;padding:12px 22px 24px;border-radius:0 0 34px 34px}
+.stamp{margin:14px 18px 30px;border:1.5px dashed #c9c1e8;border-radius:12px;padding:11px;text-align:center;font-size:11.5px;color:var(--mut);line-height:1.4}
+.scroll{overflow-y:auto;overflow-x:hidden;flex:1;scrollbar-width:none}.scroll::-webkit-scrollbar{display:none}
+.rec-row{display:flex;justify-content:space-between;gap:14px;padding:9px 22px;font-size:14px}
+.rec-row span:first-child{color:var(--mut)}.rec-row span:last-child{font-weight:600;text-align:right;word-break:break-all}
+.rec-h{padding:16px 22px 4px;font-size:18px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wrap" class="down">
+    <div class="phone"><div class="screen" id="screen">
+      <div class="island"></div>
+      <div class="status" id="status"><span id="clock">09:41</span>
+        <span style="display:flex;align-items:center">
+          <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+          <svg viewBox="0 0 17 12"><path d="M8.5 2.2c2.3 0 4.400.9 6 2.400l1.200-1.300A10.300 10.300 0 0 0 8.500.4 10.300 10.300 0 0 0 1.300 3.300l1.200 1.300a8.500 8.500 0 0 1 6-2.400Zm0 3.500c1.300 0 2.500.5 3.400 1.300l1.200-1.300a7 7 0 0 0-9.300 0L5 7c.9-.8 2.100-1.300 3.500-1.300Zm0 3.500L6.800 11 8.500 12 10.200 11Z"/></svg>
+          <svg viewBox="0 0 27 12" style="height:13px"><rect x=".5" y=".5" width="22" height="11" rx="3.500" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="19" height="8" rx="2"/><rect x="24" y="4" width="2" height="4" rx="1" opacity=".5"/></svg>
+        </span></div>
+      <div id="view"></div>
+      <div class="home-ind"></div>
+    </div></div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="sync.js"></script>
+<script>
+const $ = (s)=>document.querySelector(s);
+const P = new URLSearchParams(location.search);
+const DEF = {show:false,screen:"setup",typed:"",amount:"",pass:0,scroll:0,toast:null,
+  payer:"Higor Coutinho",payerCpf:"123.456.789-00",saldo:"5.000,00",bank:{nome:"Digi",dest:"PLUS",c1:"#5b21d9",c2:"#c8f542",logo:""},keys:{email:"",tel:"",cpf:""},msg:"",
+  dest:{name:"Maria Souza",cpf:"111.222.333-44",bank:"Banco Zoeira S.A.",keyType:"cpf",key:"111.222.333-44"},
+  rid:"",rdt:"",cfg:{scale:P.get("scale")||0.85,pos:P.get("pos")||"br",mx:40,my:30}};
+let S = JSON.parse(JSON.stringify(DEF)), lastKey="", lastScreen="";
+
+const moneyFmt = (c)=>{c=(c||"").replace(/\D/g,"");c=c.padStart(3,"0");let i=c.slice(0,-2).replace(/^0+(?=\d)/,"");return i.replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+c.slice(-2)};
+const esc=(t)=>(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const bn=(s)=>(s.bank.nome||"")+(s.bank.dest||"");
+const lg=(s,dark)=>s.bank.logo?`<img src="${s.bank.logo}" alt="">`:`<div class="logo ${dark?'dark':''}">${s.bank.nome||""}<b>${s.bank.dest||""}</b></div>`;
+const hx=(h)=>{h=(h||"#000").replace("#","");if(h.length===3)h=[...h].map(c=>c+c).join("");return[0,2,4].map(i=>parseInt(h.substr(i,2),16)||0)};
+const mix=(a,b,t)=>"#"+a.map((v,i)=>Math.round(v*(1-t)+b[i]*t).toString(16).padStart(2,"0")).join("");
+const lum=(c)=>(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
+function theme(b){const p=hx(b.c1),a=hx(b.c2),r=document.documentElement.style;
+ r.setProperty("--p",b.c1);r.setProperty("--p2",mix(p,[255,255,255],.22));r.setProperty("--pd",mix(p,[0,0,0],.38));
+ r.setProperty("--lime",b.c2);r.setProperty("--accd",lum(a)>.55?mix(a,[0,0,0],.45):b.c2);r.setProperty("--onacc",lum(a)>.55?"#17132a":"#fff");
+ r.setProperty("--tint",mix(p,[255,255,255],.9));r.setProperty("--tint2",mix(p,[255,255,255],.8));}
+const first = (n)=>(n||"").split(" ")[0];
+const maskCpf = (c)=>{const d=(c||"").replace(/\D/g,"");return d.length>=11?"***."+d.slice(3,6)+"."+d.slice(6,9)+"-**":c};
+const backBar = (t,right="")=>`<div class="hdr"><div class="back">‹</div><div class="hdr-t">${t}</div>${right}</div>`;
+const numpad = (extra="")=>`<div class="keypad"><div>1</div><div>2<small>ABC</small></div><div>3<small>DEF</small></div><div>4<small>GHI</small></div><div>5<small>JKL</small></div><div>6<small>MNO</small></div><div>7<small>PQRS</small></div><div>8<small>TUV</small></div><div>9<small>WXYZ</small></div>${extra||'<div class="ghost"></div>'}<div>0</div><div>⌫</div></div>`;
+const qwerty = ()=>`<div class="qwerty">${["qwertyuiop","asdfghjkl","zxcvbnm"].map(r=>`<div class="r">${[...r].map(c=>`<i>${c}</i>`).join("")}</div>`).join("")}<div class="r"><i style="width:90px;font-size:15px">123</i><i style="width:150px"></i><i style="width:80px;font-size:15px">@</i></div></div>`;
+
+const myKeys=(s)=>{const k=[["E-mail",s.keys.email],["Telefone",s.keys.tel],["CPF",s.keys.cpf]].filter(x=>x[1]);
+ return (k.length?k:[["E-mail",first(s.payer).toLowerCase()+"@email.com"]]).map(([l,v])=>`<div class="card"><div class="row"><div><div class="lbl">${l}</div><div class="val">${v}</div></div><span>›</span></div></div>`).join("")};
+const V = {
+setup:(s)=>`
+  <div class="hero">${lg(s)}
+    <div style="margin-top:22px;font-size:26px;font-weight:700;letter-spacing:-.6px">Quem vai<br>receber o Pix?</div></div>
+  <div style="padding:26px 18px 0">
+    <div class="card" style="margin:0"><div class="lbl">Nome sorteado</div>
+      <div style="font-size:22px;font-weight:700;margin:4px 0 14px">${s.dest.name}</div>
+      <div class="sep" style="margin:0 0 12px"></div>
+      <div class="lbl">Chave Pix (${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[s.dest.keyType]})</div>
+      <div class="val" style="font-size:17px">${s.dest.key}</div></div>
+    <div class="cta lime" style="margin:18px 0 0">Copiar chave</div>
+    <div class="cta" style="margin:10px 0 0;background:var(--tint);color:var(--p)">Sortear outro nome</div>
+  </div>`,
+home:(s)=>`
+  <div class="hero" style="padding-bottom:26px"><div class="row">${lg(s)}<div style="font-size:20px">👁 &nbsp;❔</div></div>
+    <div style="margin-top:18px;font-size:15px;opacity:.85">Olá, ${first(s.payer)}</div>
+    <div style="margin-top:14px;background:rgba(255,255,255,.12);border-radius:20px;padding:16px 18px">
+      <div style="font-size:12px;opacity:.8">Saldo da conta</div>
+      <div style="font-size:30px;font-weight:800;margin-top:4px">R$ ${s.saldo}</div></div></div>
+  <div class="grid4" style="margin-top:20px"><div><div class="ico" style="background:var(--lime)">◈</div>Área Pix</div><div><div class="ico">▥</div>Pagar</div><div><div class="ico">▭</div>Cartões</div><div><div class="ico">☰</div>Extrato</div></div>
+  <div style="padding:14px 22px 6px;font-weight:700">Minha ${first(bn(s))}</div>
+  <div class="card"><div class="row"><b>Cartões</b><span class="ico" style="width:30px;height:30px;font-size:14px">▭</span></div><div class="lbl" style="margin-top:20px">Você ainda não tem cartão de crédito</div></div>
+  <div class="card"><div class="row"><b>Investimentos</b><span class="ico" style="width:30px;height:30px;font-size:14px">↗</span></div><div class="lbl" style="margin-top:20px">Total investido · R$ 0,01</div></div>`,
+pix:(s)=>`${backBar("")}<div class="title">Área Pix</div>
+  <div class="grid4"><div><div class="ico" style="background:var(--lime)">⇄</div>Fazer Pix</div><div><div class="ico">⌗</div>Ler QR Code</div><div><div class="ico">⇣</div>Receber Pix</div><div><div class="ico">⧉</div>Pix Copia e Cola</div></div>
+  <div style="padding:16px 22px 8px;font-weight:700">Minhas chaves</div>
+  ${myKeys(s)}
+  <div style="padding:16px 22px 8px;font-weight:700">Mais opções</div>
+  ${["Extrato Pix","Pix Agendado","Meus limites"].map(t=>`<div class="card" style="background:#f4f2fb;border:0"><div class="row"><span>${t}</span><span>›</span></div></div>`).join("")}`,
+dest:(s)=>{const t=s.typed||"";const kt=s.dest.keyType;
+  return `${backBar("")}<div class="title">Para quem deseja enviar?</div>
+  <div style="padding:0 22px"><div style="border-bottom:2px solid var(--p);padding:8px 0;font-size:16px;display:flex;justify-content:space-between">
+    <span class="${t?'caret':''}" style="${t?'':'color:#9a95b2'}">${t||"Nome, CPF/CNPJ ou Chave Pix"}</span><span style="color:var(--p);font-weight:700;font-size:13px">${t?"✕":"Colar"}</span></div>
+    <div style="color:var(--p);font-size:12px;font-weight:600;margin-top:10px">Use agência e conta</div></div>
+  ${t&&t.length>=s.dest.key.length?`<div class="card fade" style="margin-top:20px"><div class="row"><div><div class="lbl">${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[kt]}</div><div class="val">${s.dest.key}</div></div><span>›</span></div></div>`:
+   t?`<div style="text-align:center;padding:32px 40px;font-size:12.5px;color:var(--mut)"><b style="color:var(--ink);font-size:14px">Contato não encontrado</b><br>Digite a chave Pix completa ou use dados bancários.</div>`:
+   `<div style="display:flex;background:var(--tint);border-radius:22px;margin:20px 22px;padding:3px;font-size:13px;font-weight:600;text-align:center"><div style="flex:1;padding:8px;color:var(--mut)">Recentes</div><div style="flex:1;padding:8px;background:#fff;border-radius:19px">Favoritos</div></div><div style="text-align:center;padding:20px 40px;font-size:12.5px;color:var(--mut)"><b style="color:var(--ink)">Você ainda não possui favoritos</b></div>`}
+  ${kt==="email"?qwerty():numpad()}`},
+verify:(s)=>`${backBar("")}<div class="title" style="opacity:.4">Para quem deseja enviar?</div><div class="dim"></div>
+  <div class="sheet"><h4>Verifique se esta é a pessoa certa para receber seu Pix <span>✕</span></h4>
+   <div style="padding:8px 22px 22px">
+    <div class="row" style="justify-content:flex-start;gap:12px;padding:12px 0"><div class="ico" style="background:var(--lime)">◆</div><div><div class="val">${s.dest.name}</div><div class="lbl">${s.dest.bank}</div></div></div>
+    <div class="row" style="justify-content:flex-start;gap:12px;padding:12px 0"><div class="ico">ID</div><div><div class="val">${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[s.dest.keyType]}</div><div class="lbl">${s.dest.keyType==="cpf"?maskCpf(s.dest.key):s.dest.key}</div></div></div>
+    <div class="cta" style="margin:14px 0 8px">Continuar</div></div></div>`,
+valor:(s)=>`${backBar("Valor do Pix","<span style='margin-left:auto;font-size:17px'>👁</span>")}
+  <div style="text-align:center;margin-top:34px;font-size:50px;font-weight:700;letter-spacing:-1px"><span style="font-size:20px;font-weight:700;margin-right:6px">R$</span>${moneyFmt(s.amount)}</div>
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:24px"><span class="chip">+ R$ 5</span><span class="chip">+ R$ 10</span><span class="chip">+ R$ 20</span><span class="chip">+ R$ 100</span></div>
+  <div class="lbl" style="margin:20px 22px">Saldo em conta: R$ ${s.saldo}</div>
+  <div style="margin:auto 22px 14px;align-self:flex-end;width:42px;height:42px;border-radius:50%;background:${(s.amount||"").replace(/\D/g,"")>0?"var(--p)":"var(--tint2)"};color:#fff;display:grid;place-items:center;font-size:20px">›</div>
+  ${numpad('<div>,</div>')}`,
+confirm:(s)=>confirmView(s,false),
+senha:(s)=>confirmView(s,true),
+loading:(s)=>confirmView(s,false,true),
+receipt:(s)=>`<div class="hdr"><div class="back">‹</div><div style="margin-left:auto;color:var(--p)">⇪</div></div>
+  <div class="scroll" id="sc">
+   <div style="padding:0 22px">${lg(s,true)}<div style="font-size:24px;font-weight:600;margin-top:12px;letter-spacing:-.4px">Comprovante de transferência</div></div>
+   <div style="padding:22px 22px 6px"><div style="width:44px;height:44px;border-radius:50%;background:var(--tint);display:grid;place-items:center;color:var(--p);font-size:20px">✓</div>
+     <div style="font-weight:700;margin-top:10px">Pagamento Pix</div><div class="lbl">${s.rdt}</div></div>
+   <div class="rec-row"><span>Valor</span><span>R$ ${moneyFmt(s.amount)}</span></div>
+   <div class="rec-row"><span>ID da transação</span><span style="max-width:215px">${s.rid}</span></div>
+   <div class="rec-h">Pagador</div>
+   <div class="rec-row"><span>Nome</span><span>${s.payer}</span></div>
+   <div class="rec-row"><span>CPF</span><span>${maskCpf(s.payerCpf)}</span></div>
+   <div class="rec-row"><span>Instituição</span><span>Banco ${bn(s)}</span></div>
+   <div class="rec-h">Recebedor</div>
+   <div class="rec-row"><span>Nome</span><span>${s.dest.name}</span></div>
+   <div class="rec-row"><span>CPF</span><span>${maskCpf(s.dest.cpf)}</span></div>
+   <div class="rec-row"><span>Instituição</span><span>${s.dest.bank}</span></div>
+   <div class="stamp">🎭 <b>SIMULAÇÃO · BRINCADEIRA</b><br>${esc(s.msg)||bn(s)+' é um app de zoeira. Nenhuma transferência real foi feita.'}</div>
+   <div style="height:40px"></div></div>`
+};
+function confirmView(s,pwd,loading){
+  const body = `${backBar("Confirmar transferência")}
+  <div class="lbl" style="padding:0 22px">Valor de envio</div>
+  <div class="row" style="padding:2px 22px 14px"><div style="font-size:32px;font-weight:700;letter-spacing:-.8px">R$ ${moneyFmt(s.amount)}</div><span style="color:var(--p);font-weight:700;font-size:14px">✎ Alterar</span></div>
+  <div class="card"><div class="lbl">Destino</div><div class="val">${s.dest.name}</div><div class="lbl">${maskCpf(s.dest.cpf)}</div><div class="sep"></div>
+    <div class="row"><div><div class="lbl">Banco</div><div class="val">${s.dest.bank}</div></div><div class="ico" style="background:var(--lime);width:34px;height:34px">◆</div></div></div>
+  ${[["Para quando","Agora"],["Frequência","Única vez"],["Forma de pagamento","Saldo em conta"]].map(([a,b])=>`<div style="padding:11px 22px;border-bottom:1px solid var(--line)"><div class="lbl">${a}</div><div class="val">${b}</div></div>`).join("")}
+  <div class="row" style="padding:14px 22px"><span style="font-size:14px">Adicionar comentário</span><span style="font-size:20px;color:var(--p)">+</span></div>
+  <div class="cta ${loading?'dis':''}" style="margin-top:auto">${loading?'<div class="spin" style="width:22px;height:22px"></div>':'Fazer Pix'}</div>`;
+  if(!pwd) return body;
+  return body+`<div class="dim"></div><div class="sheet"><h4 style="border:0">Informe sua senha <span>✕</span></h4>
+   <div class="dots">${[0,1,2,3,4,5].map(i=>`<i class="${i<s.pass?'on':''}"></i>`).join("")}</div>${numpad()}</div>`;
+}
+
+function setClock(){const d=new Date();$("#clock").textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+setClock();setInterval(setClock,10000);
+
+function layout(c){
+  const w=$("#wrap");const sc=+c.scale||.85;
+  w.style.setProperty("--s",sc);
+  w.style.transform=`scale(${sc})`;
+  w.style.top="";w.style.bottom="";w.style.left="";w.style.right="";
+  const my=(c.my??30)+"px",mx=(c.mx??40)+"px";
+  w.style.transformOrigin="bottom right";
+  if(c.pos==="bl"){w.style.left=mx;w.style.transformOrigin="bottom left"}
+  else if(c.pos==="center"){w.style.left="50%";w.style.marginLeft="-207px";w.style.transformOrigin="bottom center"}
+  else w.style.right=mx;
+  w.style.bottom=my;
+}
+function render(s){
+  s=Object.assign({},DEF,s);s.bank=Object.assign({},DEF.bank,s.bank);s.keys=Object.assign({},DEF.keys,s.keys);s.dest=Object.assign({},DEF.dest,s.dest);s.cfg=Object.assign({},DEF.cfg,s.cfg);
+  const prevShow=S.show;S=s;
+  layout(s.cfg);theme(s.bank);
+  $("#wrap").classList.toggle("down",!s.show);
+  const light=["setup","home"].includes(s.screen);
+  $("#status").className="status "+(light?"light":"");
+  $("#screen").className="screen "+(light?"light-ind":"");
+  const key=JSON.stringify([s.screen,s.typed,s.amount,s.pass,s.dest,s.payer,s.payerCpf,s.saldo,s.rid,s.rdt,s.bank,s.keys,s.msg]);
+  if(key!==lastKey){
+    const v=$("#view");v.innerHTML=V[s.screen]?V[s.screen](s):"";
+    if(s.screen!==lastScreen){v.classList.remove("enter");void v.offsetWidth;v.classList.add("enter");clearTimeout(render.et);render.et=setTimeout(()=>v.classList.remove("enter"),600)}
+    lastScreen=s.screen;lastKey=key;
+  }
+  const sc=$("#sc");if(sc){const m=sc.scrollHeight-sc.clientHeight;sc.scrollTo({top:m*(s.scroll/100),behavior:"smooth"})}
+  if(s.toast&&s.toast.id!==render.lastToast){render.lastToast=s.toast.id;
+    const t=document.createElement("div");t.className="toast";t.textContent=s.toast.t;$("#screen").appendChild(t);setTimeout(()=>t.remove(),2700)}
+}
+DPSync.listen(render);
+render({});
+</script>
+</body>
+</html>

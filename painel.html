@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Painel Pix de zoeira</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--p:#7c3aed;--lime:#c8f542;--bg:#12101c;--c:#1c1930;--l:#2c2848;--t:#f2f0fb;--m:#9c97b8}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px;max-width:560px;margin:auto}
+h1{font-size:20px}h1 b{color:var(--lime)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.st{font-size:12px;color:var(--m)}.st i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#18a957;margin-right:5px}
+.box{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:14px;margin-bottom:12px}
+.box h2{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--m);margin-bottom:10px}
+button{font:inherit;color:var(--t);background:var(--l);border:0;border-radius:12px;padding:13px 14px;font-weight:600;cursor:pointer}
+button:active{transform:scale(.97)}
+.p{background:var(--p)}.lime{background:var(--lime);color:#17132a}.red{background:#6b1d2c}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.big{font-size:20px;padding:20px;width:100%}
+label{display:block;font-size:12px;color:var(--m);margin:8px 0 4px}
+input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit}
+.step{font-size:13px;color:var(--m);margin:8px 0;text-align:center}.step b{color:var(--lime)}
+.dest{font-size:14px;line-height:1.5}.dest b{color:var(--lime)}
+.list{display:flex;flex-direction:column;gap:6px}
+.list button{text-align:left;font-weight:500;font-size:14px;display:flex;justify-content:space-between}
+.list button.on{background:var(--p)}
+</style>
+</head>
+<body>
+<div class="top"><h1>Painel <b>Pix</b> de zoeira</h1><div class="st"><i></i><span id="mode"></span></div></div>
+
+<div class="box">
+  <h2>Aparelho</h2>
+  <div class="g2"><button class="lime" id="up">⬆ Subir iPhone</button><button class="red" id="down">⬇ Descer</button></div>
+</div>
+
+<div class="box">
+  <h2>Quem recebe (sorteio)</h2>
+  <div class="dest" id="destInfo"></div>
+  <div class="g2" style="margin-top:10px"><button class="p" id="draw">🎲 Sortear nome</button><button id="copy">📋 Copiar chave</button></div>
+  <label>Tipo da chave</label>
+  <select id="ktype"><option value="random">Aleatório</option><option value="cpf">CPF</option><option value="tel">Telefone</option><option value="email">E-mail</option></select>
+</div>
+
+<div class="box">
+  <h2>Roteiro passo a passo</h2>
+  <div class="step" id="stepInfo"></div>
+  <div class="g2"><button id="prev">◀ Voltar</button><button class="lime big" id="next" style="padding:16px">Próximo ▶</button></div>
+  <div class="list" id="steps" style="margin-top:12px"></div>
+  <button style="width:100%;margin-top:10px" id="auto">▶ Rodar tudo automático</button>
+</div>
+
+<div class="box">
+  <h2>Pix</h2>
+  <label>Valor do Pix (R$) — digite só os números</label><input id="valor" value="50,00" inputmode="numeric">
+  <label>Saldo da conta (R$) — digite só os números</label><input id="saldo" value="5.000,00" inputmode="numeric">
+</div>
+
+<div class="box">
+  <h2>Banco (nome, logo e cores)</h2>
+  <div class="g2"><div><label>Nome</label><input id="bnome" value="Digi"></div><div><label>Destaque (colorido)</label><input id="bdest" value="PLUS"></div></div>
+  <div class="g2"><div><label>Cor principal</label><input type="color" id="c1" value="#5b21d9" style="height:44px;padding:3px"></div><div><label>Cor de destaque</label><input type="color" id="c2" value="#c8f542" style="height:44px;padding:3px"></div></div>
+  <label>Logo (imagem opcional — substitui o nome)</label><input type="file" id="logoFile" accept="image/*">
+  <button id="logoDel" style="width:100%;margin-top:8px;font-size:13px">Remover logo</button>
+</div>
+
+<div class="box">
+  <h2>Recebedor e mensagem final</h2>
+  <label>Banco do recebedor</label>
+  <select id="rbank"><option value="">🎲 Sortear junto com o nome</option><option value="__c">✏ Personalizado…</option></select>
+  <input id="rbankC" placeholder="Nome do banco do recebedor" style="display:none;margin-top:8px">
+  <label>Mensagem no final do comprovante</label>
+  <textarea id="msg" rows="3" placeholder="vazio = mensagem padrão" style="width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit"></textarea>
+  <div class="st" style="margin-top:6px">A faixa "SIMULAÇÃO · BRINCADEIRA" fica sempre acima da mensagem.</div>
+</div>
+
+<div class="box">
+  <h2>Pagador (você) e suas chaves</h2>
+  <label>Nome do pagador</label><input id="payer" value="Higor Coutinho">
+  <label>CPF do pagador</label><input id="payerCpf" value="123.456.789-00" inputmode="numeric">
+  <label>Minha chave · e-mail</label><input id="k_email" placeholder="opcional">
+  <label>Minha chave · telefone</label><input id="k_tel" placeholder="opcional">
+  <label>Minha chave · CPF</label><input id="k_cpf" placeholder="opcional">
+  <button id="reset" class="red" style="width:100%;margin-top:12px;font-size:13px">Restaurar padrão de fábrica</button>
+  <div class="st" style="margin-top:8px">Tudo aqui é salvo automaticamente como seu padrão neste navegador.</div>
+</div>
+
+<div class="box">
+  <h2>Posição do iPhone</h2>
+  <div class="g3"><button data-pos="bl">⬅ Esq.</button><button data-pos="center">⬆ Centro</button><button data-pos="br">Dir. ➡</button></div>
+  <label>Tamanho: <span id="scv"></span></label><input type="range" id="scale" min="40" max="130" value="85">
+  <label>Distância da borda (px)</label><input type="range" id="mx" min="0" max="300" value="40">
+  <label>Altura do chão (px)</label><input type="range" id="my" min="-60" max="300" value="30">
+</div>
+
+<script src="config.js"></script>
+<script src="sync.js"></script>
+<script>
+const $=(s)=>document.querySelector(s);
+const NAMES=["Maria Souza","João Pereira","Ana Beatriz Lima","Carlos Eduardo Alves","Fernanda Rocha","Lucas Martins","Juliana Ferreira","Rafael Oliveira","Camila Barbosa","Bruno Henrique Costa","Patrícia Gomes","Thiago Ribeiro","Larissa Mendes","Gabriel Nunes","Aline Cardoso","Diego Moreira","Renata Araújo","Felipe Teixeira","Vanessa Duarte","Marcelo Batista","Priscila Campos","Rodrigo Farias","Bianca Freitas","Leandro Pinto"];
+const BANKS=["Banco Zoeira S.A.","Banco Pastel","Banco Tapioca","Banco Cuscuz S.A.","Banco Mandiocão","Banco Coxinha","Banco Pão de Queijo"];
+const rnd=(n)=>Math.floor(Math.random()*n), pick=(a)=>a[rnd(a.length)];
+const digits=(n)=>Array.from({length:n},()=>rnd(10)).join("");
+const norm=(s)=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+
+let S={show:false,screen:"setup",typed:"",amount:"",pass:0,scroll:0,toast:null,payer:"Higor Coutinho",payerCpf:"***.123.456-**",saldo:"5.000,00",dest:{},rid:"",rdt:"",cfg:{scale:.85,pos:"br",mx:40,my:30}};
+let timers=[],step=0;
+const push=(patch)=>{Object.assign(S,patch);DPSync.send(S)};
+const later=(ms,fn)=>timers.push(setTimeout(fn,ms));
+const clearT=()=>{timers.forEach(clearTimeout);timers=[]};
+
+function draw(){
+  const name=pick(NAMES);let kt=$("#ktype").value;if(kt==="random")kt=pick(["cpf","cpf","tel","email"]);
+  const cpf=digits(3)+"."+digits(3)+"."+digits(3)+"-"+digits(2);
+  let key=cpf;
+  if(kt==="tel")key="("+(11+rnd(80))+") 9"+digits(4)+"-"+digits(4);
+  if(kt==="email"){const p=norm(name).split(" ");key=p[0]+"."+p[p.length-1]+digits(2)+"@email.com"}
+  push({dest:{name,cpf,bank:chosenBank()||pick(BANKS),keyType:kt,key}});
+  renderInfo();
+}
+function renderInfo(){
+  const d=S.dest;$("#destInfo").innerHTML=d.name?`<b>${d.name}</b><br>${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[d.keyType]}: ${d.key}<br><span style="color:var(--m)">${d.bank}</span>`:"Toque em sortear";
+}
+async function copyKey(){
+  try{await navigator.clipboard.writeText(S.dest.key)}catch(e){const t=document.createElement("textarea");t.value=S.dest.key;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}
+  push({toast:{t:"✓ Chave copiada!",id:Date.now()}});
+}
+function typeText(full,field,ms,done){
+  let i=0;const iv=setInterval(()=>{i++;push({[field]:full.slice(0,i)});if(i>=full.length){clearInterval(iv);done&&done()}},ms);
+  timers.push(iv);
+}
+function chosenBank(){const v=$("#rbank").value;return v==="__c"?($("#rbankC").value.trim()||""):v}
+function money(){return ($("#valor").value||"0").replace(/\D/g,"")}
+function stamp(){
+  const d=new Date(),p=(n)=>String(n).padStart(2,"0");
+  const dt=p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+", "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+  const ab="abcdef0123456789";const rid="E"+digits(8)+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+Array.from({length:11},()=>ab[rnd(ab.length)]).join("");
+  return {rdt:dt,rid};
+}
+const STEPS=[
+ ["Início · nome sorteado",(a)=>push({screen:"setup",typed:"",amount:"",pass:0,scroll:0})],
+ ["Home",(a)=>push({screen:"home"})],
+ ["Área Pix",(a)=>push({screen:"pix"})],
+ ["Para quem enviar? (vazio)",(a)=>push({screen:"dest",typed:""})],
+ ["Colando a chave…",(a)=>{push({screen:"dest"});a?typeText(S.dest.key,"typed",95):push({typed:S.dest.key})}],
+ ["Confirmar pessoa",(a)=>push({screen:"verify",typed:S.dest.key})],
+ ["Valor do Pix (vazio)",(a)=>push({screen:"valor",amount:""})],
+ ["Digitando valor…",(a)=>{push({screen:"valor"});a?typeText(money(),"amount",260):push({amount:money()})}],
+ ["Revisar transferência",(a)=>push({screen:"confirm",amount:money(),pass:0})],
+ ["Pedir senha",(a)=>push({screen:"senha",pass:0})],
+ ["Digitando senha…",(a)=>{push({screen:"senha"});if(!a)return push({pass:6});let n=0;const iv=setInterval(()=>{n++;push({pass:n});if(n>=6)clearInterval(iv)},320);timers.push(iv)}],
+ ["Transferindo…",(a)=>{push({screen:"loading",pass:6});later(2200,()=>{push({screen:"receipt",scroll:0,...stamp()});step=12;ui()})}],
+ ["Comprovante",(a)=>{push({screen:"receipt",scroll:0,...(S.rid?{}:stamp())})}],
+ ["Rolar comprovante",(a)=>{if(S.screen!=="receipt")push({screen:"receipt",...(S.rid?{}:stamp())});later(300,()=>push({scroll:100}))}]
+];
+function go(i,anim=true){
+  clearT();step=Math.max(0,Math.min(STEPS.length-1,i));
+  if(!S.show&&step>0)push({show:true});
+  if(step>=8)S.amount=money();
+  if(step>=5&&!S.typed)S.typed=S.dest.key;
+  STEPS[step][1](anim);ui();
+}
+function ui(){
+  $("#stepInfo").innerHTML=`Passo <b>${step+1}/${STEPS.length}</b> · ${STEPS[step][0]}`;
+  document.querySelectorAll("#steps button").forEach((b,i)=>b.classList.toggle("on",i===step));
+}
+$("#steps").innerHTML=STEPS.map((s,i)=>`<button data-i="${i}"><span>${i+1}. ${s[0]}</span></button>`).join("");
+$("#steps").onclick=(e)=>{const b=e.target.closest("button");if(b)go(+b.dataset.i,false)};
+$("#next").onclick=()=>go(step+1);
+$("#prev").onclick=()=>go(step-1,false);
+$("#up").onclick=()=>{push({show:true})};
+$("#down").onclick=()=>{clearT();push({show:false})};
+$("#draw").onclick=()=>{draw();if(S.screen!=="setup")go(0,false)};
+$("#copy").onclick=copyKey;
+$("#auto").onclick=()=>{
+  clearT();step=0;push({show:true});go(0,false);
+  const seq=[[1800,1],[1600,2],[1600,3],[1300,4],[Math.max(2500,S.dest.key.length*95+1200),5],[1800,6],[1500,7],[1900,8],[2000,9],[1500,10],[2600,11]];
+  let t=0;seq.forEach(([d,i])=>{t+=d;later(t,()=>go(i,true))});
+  later(t+3600,()=>go(13,true));
+};
+BANKS.forEach(b=>{const o=document.createElement("option");o.value=b;o.textContent=b;$("#rbank").insertBefore(o,$("#rbank").lastElementChild)});
+const F=["rbank","rbankC","msg","valor","saldo","bnome","bdest","c1","c2","payer","payerCpf","k_email","k_tel","k_cpf"];
+let logo="";
+const store={get(){try{return JSON.parse(localStorage.getItem("dp-settings")||"{}")}catch(e){return{}}},set(v){try{localStorage.setItem("dp-settings",JSON.stringify(v))}catch(e){}}};
+function collect(){const o={};F.forEach(id=>o[id]=$("#"+id).value);o.logo=logo;o.cfg=S.cfg;return o}
+function applySettings(){
+  push({saldo:$("#saldo").value,payer:$("#payer").value,payerCpf:$("#payerCpf").value,
+    bank:{nome:$("#bnome").value,dest:$("#bdest").value,c1:$("#c1").value,c2:$("#c2").value,logo},
+    keys:{email:$("#k_email").value,tel:$("#k_tel").value,cpf:$("#k_cpf").value}});
+  push({msg:$("#msg").value});
+  const rb=chosenBank();$("#rbankC").style.display=$("#rbank").value==="__c"?"block":"none";
+  if(rb&&S.dest.name)push({dest:Object.assign({},S.dest,{bank:rb})});
+  if(["confirm","senha","loading","receipt"].includes(S.screen))push({amount:money()});
+  store.set(collect());
+}
+const fmtMoney=(v)=>{let d=(v||"").replace(/\D/g,"").replace(/^0+/,"");d=d.padStart(3,"0");return d.slice(0,-2).replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+d.slice(-2)};
+const fmtLive=(el)=>{el.value=fmtMoney(el.value)};
+["valor","saldo"].forEach(id=>$("#"+id).addEventListener("input",()=>fmtLive($("#"+id))));
+F.forEach(id=>$("#"+id).addEventListener("input",applySettings));
+$("#rbank").addEventListener("change",applySettings);
+$("#logoFile").onchange=(e)=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{
+  const k=Math.min(1,320/im.width,120/im.height),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);logo=c.toDataURL("image/png");applySettings()};im.src=URL.createObjectURL(f)};
+$("#logoDel").onclick=()=>{logo="";$("#logoFile").value="";applySettings()};
+$("#reset").onclick=()=>{store.set({});location.reload()};
+(function load(){const v=store.get();F.forEach(id=>{if(v[id]!==undefined)$("#"+id).value=v[id]});fmtLive($("#valor"));fmtLive($("#saldo"));logo=v.logo||"";
+  if(v.cfg){S.cfg=Object.assign(S.cfg,v.cfg);$("#scale").value=S.cfg.scale*100;$("#mx").value=S.cfg.mx;$("#my").value=S.cfg.my}})();
+const cfg=()=>{push({cfg:{scale:$("#scale").value/100,pos:S.cfg.pos,mx:+$("#mx").value,my:+$("#my").value}});store.set(collect())};
+["scale","mx","my"].forEach(id=>$("#"+id).oninput=()=>{$("#scv").textContent=$("#scale").value+"%";cfg()});
+document.querySelectorAll("[data-pos]").forEach(b=>b.onclick=()=>{S.cfg.pos=b.dataset.pos;cfg()});
+$("#scv").textContent=$("#scale").value+"%";
+$("#mode").textContent=DPSync.remote?"online · sala "+DPSync.room:"modo local · sala "+DPSync.room;
+document.addEventListener("keydown",(e)=>{if(/INPUT|SELECT/.test(e.target.tagName))return;if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();go(step+1)}if(e.key==="ArrowLeft")go(step-1,false)});
+draw();applySettings();ui();
+</script>
+</body>
+</html>
