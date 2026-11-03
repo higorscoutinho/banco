@@ -36,7 +36,7 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
 </div>
 
 <div class="box">
-  <h2>Quem recebe (sorteio)</h2>
+  <h2>Quem recebe (sorteio · fica oculto no iPhone)</h2>
   <div class="dest" id="destInfo"></div>
   <div class="g2" style="margin-top:10px"><button class="p" id="draw">🎲 Sortear nome</button><button id="copy">📋 Copiar chave</button></div>
   <label>Tipo da chave</label>
@@ -48,7 +48,6 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <div class="step" id="stepInfo"></div>
   <div class="g2"><button id="prev">◀ Voltar</button><button class="lime big" id="next" style="padding:16px">Próximo ▶</button></div>
   <div class="list" id="steps" style="margin-top:12px"></div>
-  <button style="width:100%;margin-top:10px" id="auto">▶ Rodar tudo automático</button>
 </div>
 
 <div class="box">
@@ -122,7 +121,7 @@ const rnd=(n)=>Math.floor(Math.random()*n), pick=(a)=>a[rnd(a.length)];
 const digits=(n)=>Array.from({length:n},()=>rnd(10)).join("");
 const norm=(s)=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 
-let S={show:false,screen:"setup",typed:"",amount:"",pass:0,scroll:0,toast:null,payer:"Higor Coutinho",payerCpf:"***.123.456-**",saldo:"5.000,00",dest:{},rid:"",rdt:"",cfg:{scale:.85,pos:"br",mx:40,my:30}};
+let S={show:false,screen:"home",typed:"",amount:"",pass:0,scroll:0,toast:null,payer:"Higor Coutinho",payerCpf:"***.123.456-**",saldo:"5.000,00",dest:{},rid:"",rdt:"",cfg:{scale:.85,pos:"br",mx:40,my:30}};
 let timers=[],step=0;
 const push=(patch)=>{Object.assign(S,patch);DPSync.send(S)};
 const later=(ms,fn)=>timers.push(setTimeout(fn,ms));
@@ -142,7 +141,7 @@ function renderInfo(){
 }
 async function copyKey(){
   try{await navigator.clipboard.writeText(S.dest.key)}catch(e){const t=document.createElement("textarea");t.value=S.dest.key;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}
-  push({toast:{t:"✓ Chave copiada!",id:Date.now()}});
+  $("#copy").textContent="✓ Copiada!";setTimeout(()=>$("#copy").textContent="📋 Copiar chave",1500);
 }
 function typeText(full,field,ms,done){
   let i=0;const iv=setInterval(()=>{i++;push({[field]:full.slice(0,i)});if(i>=full.length){clearInterval(iv);done&&done()}},ms);
@@ -157,7 +156,6 @@ function stamp(){
   return {rdt:dt,rid};
 }
 const STEPS=[
- ["Início · nome sorteado",(a)=>push({screen:"setup",typed:"",amount:"",pass:0,scroll:0})],
  ["Home",(a)=>push({screen:"home"})],
  ["Área Pix",(a)=>push({screen:"pix"})],
  ["Para quem enviar? (vazio)",(a)=>push({screen:"dest",typed:""})],
@@ -172,31 +170,37 @@ const STEPS=[
  ["Comprovante",(a)=>{push({screen:"receipt",scroll:0,...(S.rid?{}:stamp())})}],
  ["Rolar comprovante",(a)=>{if(S.screen!=="receipt")push({screen:"receipt",...(S.rid?{}:stamp())});later(300,()=>push({scroll:100}))}]
 ];
-function go(i,anim=true){
-  clearT();step=Math.max(0,Math.min(STEPS.length-1,i));
-  if(!S.show&&step>0)push({show:true});
-  if(step>=8)S.amount=money();
-  if(step>=5&&!S.typed)S.typed=S.dest.key;
+let autoRunning=false,atimers=[];
+function go(i,anim=true,keepAuto=false){
+  clearT();if(!keepAuto){autoRunning=false;atimers.forEach(clearTimeout);atimers=[]}step=Math.max(0,Math.min(STEPS.length-1,i));
+  if(!S.show)push({show:true});
+  if(step>=7)S.amount=money();
+  if(step>=4&&!S.typed)S.typed=S.dest.key;
   STEPS[step][1](anim);ui();
 }
+const AUTO_FROM=2,AUTO_TO=10;
 function ui(){
-  $("#stepInfo").innerHTML=`Passo <b>${step+1}/${STEPS.length}</b> · ${STEPS[step][0]}`;
+  const auto=step>=AUTO_FROM&&step<=AUTO_TO;
+  $("#stepInfo").innerHTML=`Passo <b>${step+1}/${STEPS.length}</b> · ${STEPS[step][0]}${auto?" · <b>automático</b>":""}`;
+  $("#next").textContent=autoRunning?"⏳ Rodando…":(step===1?"▶ Fazer Pix (automático)":"Próximo ▶");
   document.querySelectorAll("#steps button").forEach((b,i)=>b.classList.toggle("on",i===step));
+}
+function runAuto(){
+  clearT();atimers.forEach(clearTimeout);atimers=[];autoRunning=true;
+  const kl=Math.max(2400,S.dest.key.length*95+1100);
+  const seq=[[0,2],[1400,3],[kl,4],[1900,5],[1500,6],[2300,7],[2100,8],[1600,9],[2500,10]];
+  let t=0;seq.forEach(([d,i])=>{t+=d;atimers.push(setTimeout(()=>go(i,true,true),t))});
+  atimers.push(setTimeout(()=>{autoRunning=false;ui()},t+2600));
 }
 $("#steps").innerHTML=STEPS.map((s,i)=>`<button data-i="${i}"><span>${i+1}. ${s[0]}</span></button>`).join("");
 $("#steps").onclick=(e)=>{const b=e.target.closest("button");if(b)go(+b.dataset.i,false)};
-$("#next").onclick=()=>go(step+1);
+$("#next").onclick=()=>{if(autoRunning)return;if(step===AUTO_FROM-1)runAuto();else go(step+1)};
 $("#prev").onclick=()=>go(step-1,false);
-$("#up").onclick=()=>{push({show:true})};
-$("#down").onclick=()=>{clearT();push({show:false})};
-$("#draw").onclick=()=>{draw();if(S.screen!=="setup")go(0,false)};
+$("#up").onclick=()=>{clearT();atimers.forEach(clearTimeout);atimers=[];autoRunning=false;step=0;push({show:true,screen:"home",typed:"",amount:"",pass:0,scroll:0,rid:"",rdt:""});ui()};
+$("#down").onclick=()=>{clearT();atimers.forEach(clearTimeout);atimers=[];autoRunning=false;push({show:false})};
+$("#draw").onclick=()=>{draw();if(["dest","verify","confirm","senha","loading","receipt"].includes(S.screen)&&!autoRunning){}};
 $("#copy").onclick=copyKey;
-$("#auto").onclick=()=>{
-  clearT();step=0;push({show:true});go(0,false);
-  const seq=[[1800,1],[1600,2],[1600,3],[1300,4],[Math.max(2500,S.dest.key.length*95+1200),5],[1800,6],[1500,7],[1900,8],[2000,9],[1500,10],[2600,11]];
-  let t=0;seq.forEach(([d,i])=>{t+=d;later(t,()=>go(i,true))});
-  later(t+3600,()=>go(13,true));
-};
+
 BANKS.forEach(b=>{const o=document.createElement("option");o.value=b;o.textContent=b;$("#rbank").insertBefore(o,$("#rbank").lastElementChild)});
 const F=["rbank","rbankC","msg","valor","saldo","bnome","bdest","c1","c2","payer","payerCpf","k_email","k_tel","k_cpf"];
 let logo="",rlogo="",photo="";
