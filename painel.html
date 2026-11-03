@@ -63,6 +63,24 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <div class="g2"><div><label>Cor principal</label><input type="color" id="c1" value="#5b21d9" style="height:44px;padding:3px"></div><div><label>Cor de destaque</label><input type="color" id="c2" value="#c8f542" style="height:44px;padding:3px"></div></div>
   <label>Logo (imagem opcional — substitui o nome)</label><input type="file" id="logoFile" accept="image/*">
   <button id="logoDel" style="width:100%;margin-top:8px;font-size:13px">Remover logo</button>
+  <label>Logo do comprovante (opcional — se vazio usa a logo acima)</label><input type="file" id="rlogoFile" accept="image/*">
+  <button id="rlogoDel" style="width:100%;margin-top:8px;font-size:13px">Remover logo do comprovante</button>
+</div>
+
+<div class="box">
+  <h2>Foto na tela inicial</h2>
+  <div class="st" style="margin-bottom:6px">Aparece redonda ao lado do "Olá, nome" na home.</div>
+  <input type="file" id="photoFile" accept="image/*">
+  <button id="photoDel" style="width:100%;margin-top:8px;font-size:13px">Remover foto</button>
+</div>
+
+<div class="box">
+  <h2>Salvar / compartilhar configuração</h2>
+  <div class="g2"><button id="expCopy" class="p">📋 Copiar código</button><button id="expFile">⬇ Baixar arquivo</button></div>
+  <label>Importar: cole o código aqui ou escolha o arquivo</label>
+  <textarea id="impText" rows="3" placeholder="cole o código da configuração" style="width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit"></textarea>
+  <div class="g2" style="margin-top:8px"><button id="impBtn" class="lime">Importar código</button><input type="file" id="impFile" accept=".json,application/json"></div>
+  <div class="st" style="margin-top:8px">Quem receber o código usa o mesmo visual. A sala (?room=) e o Firebase de cada pessoa são separados.</div>
 </div>
 
 <div class="box">
@@ -181,12 +199,12 @@ $("#auto").onclick=()=>{
 };
 BANKS.forEach(b=>{const o=document.createElement("option");o.value=b;o.textContent=b;$("#rbank").insertBefore(o,$("#rbank").lastElementChild)});
 const F=["rbank","rbankC","msg","valor","saldo","bnome","bdest","c1","c2","payer","payerCpf","k_email","k_tel","k_cpf"];
-let logo="";
+let logo="",rlogo="",photo="";
 const store={get(){try{return JSON.parse(localStorage.getItem("dp-settings")||"{}")}catch(e){return{}}},set(v){try{localStorage.setItem("dp-settings",JSON.stringify(v))}catch(e){}}};
-function collect(){const o={};F.forEach(id=>o[id]=$("#"+id).value);o.logo=logo;o.cfg=S.cfg;return o}
+function collect(){const o={};F.forEach(id=>o[id]=$("#"+id).value);o.logo=logo;o.rlogo=rlogo;o.photo=photo;o.cfg=S.cfg;return o}
 function applySettings(){
   push({saldo:$("#saldo").value,payer:$("#payer").value,payerCpf:$("#payerCpf").value,
-    bank:{nome:$("#bnome").value,dest:$("#bdest").value,c1:$("#c1").value,c2:$("#c2").value,logo},
+    bank:{nome:$("#bnome").value,dest:$("#bdest").value,c1:$("#c1").value,c2:$("#c2").value,logo,rlogo},photo,
     keys:{email:$("#k_email").value,tel:$("#k_tel").value,cpf:$("#k_cpf").value}});
   push({msg:$("#msg").value});
   const rb=chosenBank();$("#rbankC").style.display=$("#rbank").value==="__c"?"block":"none";
@@ -199,12 +217,25 @@ const fmtLive=(el)=>{el.value=fmtMoney(el.value)};
 ["valor","saldo"].forEach(id=>$("#"+id).addEventListener("input",()=>fmtLive($("#"+id))));
 F.forEach(id=>$("#"+id).addEventListener("input",applySettings));
 $("#rbank").addEventListener("change",applySettings);
-$("#logoFile").onchange=(e)=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{
-  const k=Math.min(1,320/im.width,120/im.height),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
-  c.getContext("2d").drawImage(im,0,0,c.width,c.height);logo=c.toDataURL("image/png");applySettings()};im.src=URL.createObjectURL(f)};
+function readImg(file,w,h,cover,cb){const im=new Image();im.onload=()=>{
+  const c=document.createElement("canvas");
+  if(cover){c.width=w;c.height=h;const k=Math.max(w/im.width,h/im.height),dw=im.width*k,dh=im.height*k;c.getContext("2d").drawImage(im,(w-dw)/2,(h-dh)/2,dw,dh);cb(c.toDataURL("image/jpeg",.85))}
+  else{const k=Math.min(1,w/im.width,h/im.height);c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/png"))}
+  URL.revokeObjectURL(im.src)};im.src=URL.createObjectURL(file)}
+$("#logoFile").onchange=(e)=>{const f=e.target.files[0];if(f)readImg(f,320,120,false,(d)=>{logo=d;applySettings()})};
 $("#logoDel").onclick=()=>{logo="";$("#logoFile").value="";applySettings()};
+$("#rlogoFile").onchange=(e)=>{const f=e.target.files[0];if(f)readImg(f,320,120,false,(d)=>{rlogo=d;applySettings()})};
+$("#rlogoDel").onclick=()=>{rlogo="";$("#rlogoFile").value="";applySettings()};
+$("#photoFile").onchange=(e)=>{const f=e.target.files[0];if(f)readImg(f,160,160,true,(d)=>{photo=d;applySettings()})};
+$("#photoDel").onclick=()=>{photo="";$("#photoFile").value="";applySettings()};
+const exportStr=()=>JSON.stringify(Object.assign({app:"pix-zoeira",v:1},collect()));
+$("#expCopy").onclick=async()=>{const t=exportStr();try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement("textarea");x.value=t;document.body.appendChild(x);x.select();document.execCommand("copy");x.remove()}$("#expCopy").textContent="✓ Copiado!";setTimeout(()=>$("#expCopy").textContent="📋 Copiar código",1800)};
+$("#expFile").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([exportStr()],{type:"application/json"}));a.download="config-pix-zoeira.json";a.click()};
+function importStr(t){try{const o=JSON.parse(t);if(!o||o.app!=="pix-zoeira")throw 0;store.set(o);location.reload()}catch(e){alert("Código inválido. Copie de novo o código completo.")}}
+$("#impBtn").onclick=()=>importStr($("#impText").value.trim());
+$("#impFile").onchange=(e)=>{const f=e.target.files[0];if(f)f.text().then(importStr)};
 $("#reset").onclick=()=>{store.set({});location.reload()};
-(function load(){const v=store.get();F.forEach(id=>{if(v[id]!==undefined)$("#"+id).value=v[id]});fmtLive($("#valor"));fmtLive($("#saldo"));logo=v.logo||"";
+(function load(){const v=store.get();F.forEach(id=>{if(v[id]!==undefined)$("#"+id).value=v[id]});fmtLive($("#valor"));fmtLive($("#saldo"));logo=v.logo||"";rlogo=v.rlogo||"";photo=v.photo||"";
   if(v.cfg){S.cfg=Object.assign(S.cfg,v.cfg);$("#scale").value=S.cfg.scale*100;$("#mx").value=S.cfg.mx;$("#my").value=S.cfg.my}})();
 const cfg=()=>{push({cfg:{scale:$("#scale").value/100,pos:S.cfg.pos,mx:+$("#mx").value,my:+$("#my").value}});store.set(collect())};
 ["scale","mx","my"].forEach(id=>$("#"+id).oninput=()=>{$("#scv").textContent=$("#scale").value+"%";cfg()});

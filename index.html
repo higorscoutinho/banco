@@ -108,7 +108,7 @@ html,body{width:100%;height:100%;background:transparent;overflow:hidden;font-fam
 const $ = (s)=>document.querySelector(s);
 const P = new URLSearchParams(location.search);
 const DEF = {show:false,screen:"setup",typed:"",amount:"",pass:0,scroll:0,toast:null,
-  payer:"Higor Coutinho",payerCpf:"123.456.789-00",saldo:"5.000,00",bank:{nome:"Digi",dest:"PLUS",c1:"#5b21d9",c2:"#c8f542",logo:""},keys:{email:"",tel:"",cpf:""},msg:"",
+  payer:"Higor Coutinho",payerCpf:"123.456.789-00",saldo:"5.000,00",bank:{nome:"Digi",dest:"PLUS",c1:"#5b21d9",c2:"#c8f542",logo:"",rlogo:""},keys:{email:"",tel:"",cpf:""},msg:"",photo:"",
   dest:{name:"Maria Souza",cpf:"111.222.333-44",bank:"Banco Zoeira S.A.",keyType:"cpf",key:"111.222.333-44"},
   rid:"",rdt:"",cfg:{scale:P.get("scale")||0.85,pos:P.get("pos")||"br",mx:40,my:30}};
 let S = JSON.parse(JSON.stringify(DEF)), lastKey="", lastScreen="";
@@ -116,7 +116,7 @@ let S = JSON.parse(JSON.stringify(DEF)), lastKey="", lastScreen="";
 const moneyFmt = (c)=>{c=(c||"").replace(/\D/g,"");c=c.padStart(3,"0");let i=c.slice(0,-2).replace(/^0+(?=\d)/,"");return i.replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+c.slice(-2)};
 const esc=(t)=>(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const bn=(s)=>(s.bank.nome||"")+(s.bank.dest||"");
-const lg=(s,dark)=>s.bank.logo?`<img src="${s.bank.logo}" alt="">`:`<div class="logo ${dark?'dark':''}">${s.bank.nome||""}<b>${s.bank.dest||""}</b></div>`;
+const lg=(s,dark,rec)=>{const im=rec?(s.bank.rlogo||s.bank.logo):s.bank.logo;return im?`<img src="${im}" alt="">`:`<div class="logo ${dark?'dark':''}">${s.bank.nome||""}<b>${s.bank.dest||""}</b></div>`};
 const hx=(h)=>{h=(h||"#000").replace("#","");if(h.length===3)h=[...h].map(c=>c+c).join("");return[0,2,4].map(i=>parseInt(h.substr(i,2),16)||0)};
 const mix=(a,b,t)=>"#"+a.map((v,i)=>Math.round(v*(1-t)+b[i]*t).toString(16).padStart(2,"0")).join("");
 const lum=(c)=>(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
@@ -147,7 +147,7 @@ setup:(s)=>`
   </div>`,
 home:(s)=>`
   <div class="hero" style="padding-bottom:26px"><div class="row">${lg(s)}<div style="font-size:20px">👁 &nbsp;❔</div></div>
-    <div style="margin-top:18px;font-size:15px;opacity:.85">Olá, ${first(s.payer)}</div>
+    <div style="margin-top:18px;display:flex;align-items:center;gap:11px">${s.photo?`<img src="${s.photo}" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.75)">`:""}<div style="font-size:16px;font-weight:600">Olá, ${first(s.payer)}</div></div>
     <div style="margin-top:14px;background:rgba(255,255,255,.12);border-radius:20px;padding:16px 18px">
       <div style="font-size:12px;opacity:.8">Saldo da conta</div>
       <div style="font-size:30px;font-weight:800;margin-top:4px">R$ ${s.saldo}</div></div></div>
@@ -187,7 +187,7 @@ senha:(s)=>confirmView(s,true),
 loading:(s)=>confirmView(s,false,true),
 receipt:(s)=>`<div class="hdr"><div class="back">‹</div><div style="margin-left:auto;color:var(--p)">⇪</div></div>
   <div class="scroll" id="sc">
-   <div style="padding:0 22px">${lg(s,true)}<div style="font-size:24px;font-weight:600;margin-top:12px;letter-spacing:-.4px">Comprovante de transferência</div></div>
+   <div style="padding:0 22px">${lg(s,true,true)}<div style="font-size:24px;font-weight:600;margin-top:12px;letter-spacing:-.4px">Comprovante de transferência</div></div>
    <div style="padding:22px 22px 6px"><div style="width:44px;height:44px;border-radius:50%;background:var(--tint);display:grid;place-items:center;color:var(--p);font-size:20px">✓</div>
      <div style="font-weight:700;margin-top:10px">Pagamento Pix</div><div class="lbl">${s.rdt}</div></div>
    <div class="rec-row"><span>Valor</span><span>R$ ${moneyFmt(s.amount)}</span></div>
@@ -240,7 +240,7 @@ function render(s){
   const light=["setup","home"].includes(s.screen);
   $("#status").className="status "+(light?"light":"");
   $("#screen").className="screen "+(light?"light-ind":"");
-  const key=JSON.stringify([s.screen,s.typed,s.amount,s.pass,s.dest,s.payer,s.payerCpf,s.saldo,s.rid,s.rdt,s.bank,s.keys,s.msg]);
+  const key=JSON.stringify([s.screen,s.typed,s.amount,s.pass,s.dest,s.payer,s.payerCpf,s.saldo,s.rid,s.rdt,s.bank,s.keys,s.msg,s.photo]);
   if(key!==lastKey){
     const v=$("#view");v.innerHTML=V[s.screen]?V[s.screen](s):"";
     if(s.screen!==lastScreen){v.classList.remove("enter");void v.offsetWidth;v.classList.add("enter");clearTimeout(render.et);render.et=setTimeout(()=>v.classList.remove("enter"),600)}
