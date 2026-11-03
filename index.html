@@ -116,7 +116,7 @@ let S = JSON.parse(JSON.stringify(DEF)), lastKey="", lastScreen="";
 const moneyFmt = (c)=>{c=(c||"").replace(/\D/g,"");c=c.padStart(3,"0");let i=c.slice(0,-2).replace(/^0+(?=\d)/,"");return i.replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+c.slice(-2)};
 const esc=(t)=>(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const bn=(s)=>(s.bank.nome||"")+(s.bank.dest||"");
-const lg=(s,dark,rec)=>{const im=rec?(s.bank.rlogo||s.bank.logo):s.bank.logo;return im?`<img src="${im}" alt="">`:`<div class="logo ${dark?'dark':''}">${s.bank.nome||""}<b>${s.bank.dest||""}</b></div>`};
+const lg=(s,dark,rec)=>{const im=rec?s.bank.rlogo:s.bank.logo;return im?`<img src="${im}" alt="">`:`<div class="logo ${dark?'dark':''}">${s.bank.nome||""}<b>${s.bank.dest||""}</b></div>`};
 const hx=(h)=>{h=(h||"#000").replace("#","");if(h.length===3)h=[...h].map(c=>c+c).join("");return[0,2,4].map(i=>parseInt(h.substr(i,2),16)||0)};
 const mix=(a,b,t)=>"#"+a.map((v,i)=>Math.round(v*(1-t)+b[i]*t).toString(16).padStart(2,"0")).join("");
 const lum=(c)=>(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
