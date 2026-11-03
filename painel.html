@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Painel Pix de zoeira</title>
+<title>Painel Live Pix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--p:#7c3aed;--lime:#c8f542;--bg:#12101c;--c:#1c1930;--l:#2c2848;--t:#f2f0fb;--m:#9c97b8}
@@ -122,7 +122,7 @@ details.cfg>.box{margin:0 10px 10px;background:#15122a}
 <script>
 const $=(s)=>document.querySelector(s);
 const NAMES=["Maria Souza","João Pereira","Ana Beatriz Lima","Carlos Eduardo Alves","Fernanda Rocha","Lucas Martins","Juliana Ferreira","Rafael Oliveira","Camila Barbosa","Bruno Henrique Costa","Patrícia Gomes","Thiago Ribeiro","Larissa Mendes","Gabriel Nunes","Aline Cardoso","Diego Moreira","Renata Araújo","Felipe Teixeira","Vanessa Duarte","Marcelo Batista","Priscila Campos","Rodrigo Farias","Bianca Freitas","Leandro Pinto"];
-const BANKS=["Banco Zoeira S.A.","Banco Pastel","Banco Tapioca","Banco Cuscuz S.A.","Banco Mandiocão","Banco Coxinha","Banco Pão de Queijo"];
+const BANKS=["Banco Brandesco S.A.","Banco Itaú Unibanco S.A.","Banco Nubank","Banco Inter S.A.","Caixa Econômica Federal","Banco Banrisul","Banco DIGI+"];
 const rnd=(n)=>Math.floor(Math.random()*n), pick=(a)=>a[rnd(a.length)];
 const digits=(n)=>Array.from({length:n},()=>rnd(10)).join("");
 const norm=(s)=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
