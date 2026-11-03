@@ -25,6 +25,13 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
 .list{display:flex;flex-direction:column;gap:6px}
 .list button{text-align:left;font-weight:500;font-size:14px;display:flex;justify-content:space-between}
 .list button.on{background:var(--p)}
+details.cfg{background:var(--c);border:1px solid var(--l);border-radius:16px;margin-bottom:12px}
+details.cfg>summary{padding:16px 14px;font-weight:700;cursor:pointer;list-style:none;font-size:15px}
+details.cfg>summary::-webkit-details-marker{display:none}
+details.cfg>summary:after{content:"▾";float:right;color:var(--m)}
+details.cfg[open]>summary:after{content:"▴"}
+details.cfg[open]{padding-bottom:2px}
+details.cfg>.box{margin:0 10px 10px;background:#15122a}
 </style>
 </head>
 <body>
@@ -36,11 +43,15 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
 </div>
 
 <div class="box">
-  <h2>Quem recebe (sorteio · fica oculto no iPhone)</h2>
-  <div class="dest" id="destInfo"></div>
-  <div class="g2" style="margin-top:10px"><button class="p" id="draw">🎲 Sortear nome</button><button id="copy">📋 Copiar chave</button></div>
+  <h2>Quem recebe e quanto (fica oculto no iPhone até a tela da transferência)</h2>
+  <label>Valor do Pix (R$) — digite só os números</label><input id="valor" value="50,00" inputmode="numeric" style="font-size:20px;font-weight:700">
+  <label>Nome do recebedor</label>
+  <div style="display:flex;gap:8px"><input id="rname" placeholder="digite um nome ou sorteie" autocomplete="off"><button class="p" id="draw" style="white-space:nowrap">🎲 Sortear</button></div>
+  <label>Chave Pix (gerada automática — pode editar)</label>
+  <div style="display:flex;gap:8px"><input id="rkey" autocomplete="off"><button id="newkey" style="white-space:nowrap" title="Gerar nova chave">🔑 Nova</button><button id="copy" style="white-space:nowrap">📋 Copiar</button></div>
   <label>Tipo da chave</label>
   <select id="ktype"><option value="random">Aleatório</option><option value="cpf">CPF</option><option value="tel">Telefone</option><option value="email">E-mail</option></select>
+  <div class="dest st" id="destInfo" style="margin-top:8px"></div>
 </div>
 
 <div class="box">
@@ -50,12 +61,11 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <div class="list" id="steps" style="margin-top:12px"></div>
 </div>
 
+<details class="cfg"><summary>⚙ Configurações (banco, cores, logos, foto, conta, posição…)</summary>
 <div class="box">
-  <h2>Pix</h2>
-  <label>Valor do Pix (R$) — digite só os números</label><input id="valor" value="50,00" inputmode="numeric">
+  <h2>Conta</h2>
   <label>Saldo da conta (R$) — digite só os números</label><input id="saldo" value="5.000,00" inputmode="numeric">
 </div>
-
 <div class="box">
   <h2>Banco (nome, logo e cores)</h2>
   <div class="g2"><div><label>Nome</label><input id="bnome" value="Digi"></div><div><label>Destaque (colorido)</label><input id="bdest" value="PLUS"></div></div>
@@ -65,25 +75,14 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <label>Logo do comprovante (opcional — se vazio usa a logo acima)</label><input type="file" id="rlogoFile" accept="image/*">
   <button id="rlogoDel" style="width:100%;margin-top:8px;font-size:13px">Remover logo do comprovante</button>
 </div>
-
 <div class="box">
   <h2>Foto na tela inicial</h2>
   <div class="st" style="margin-bottom:6px">Aparece redonda ao lado do "Olá, nome" na home.</div>
   <input type="file" id="photoFile" accept="image/*">
   <button id="photoDel" style="width:100%;margin-top:8px;font-size:13px">Remover foto</button>
 </div>
-
 <div class="box">
-  <h2>Salvar / compartilhar configuração</h2>
-  <div class="g2"><button id="expCopy" class="p">📋 Copiar código</button><button id="expFile">⬇ Baixar arquivo</button></div>
-  <label>Importar: cole o código aqui ou escolha o arquivo</label>
-  <textarea id="impText" rows="3" placeholder="cole o código da configuração" style="width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit"></textarea>
-  <div class="g2" style="margin-top:8px"><button id="impBtn" class="lime">Importar código</button><input type="file" id="impFile" accept=".json,application/json"></div>
-  <div class="st" style="margin-top:8px">Quem receber o código usa o mesmo visual. A sala (?room=) e o Firebase de cada pessoa são separados.</div>
-</div>
-
-<div class="box">
-  <h2>Recebedor e mensagem final</h2>
+  <h2>Banco do recebedor e mensagem final</h2>
   <label>Banco do recebedor</label>
   <select id="rbank"><option value="">🎲 Sortear junto com o nome</option><option value="__c">✏ Personalizado…</option></select>
   <input id="rbankC" placeholder="Nome do banco do recebedor" style="display:none;margin-top:8px">
@@ -91,7 +90,6 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <textarea id="msg" rows="3" placeholder="vazio = mensagem padrão" style="width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit"></textarea>
   <div class="st" style="margin-top:6px">A faixa "SIMULAÇÃO · BRINCADEIRA" fica sempre acima da mensagem.</div>
 </div>
-
 <div class="box">
   <h2>Pagador (você) e suas chaves</h2>
   <label>Nome do pagador</label><input id="payer" value="Higor Coutinho">
@@ -102,7 +100,6 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <button id="reset" class="red" style="width:100%;margin-top:12px;font-size:13px">Restaurar padrão de fábrica</button>
   <div class="st" style="margin-top:8px">Tudo aqui é salvo automaticamente como seu padrão neste navegador.</div>
 </div>
-
 <div class="box">
   <h2>Posição do iPhone</h2>
   <div class="g3"><button data-pos="bl">⬅ Esq.</button><button data-pos="center">⬆ Centro</button><button data-pos="br">Dir. ➡</button></div>
@@ -110,6 +107,15 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
   <label>Distância da borda (px)</label><input type="range" id="mx" min="0" max="300" value="40">
   <label>Altura do chão (px)</label><input type="range" id="my" min="-60" max="300" value="30">
 </div>
+<div class="box">
+  <h2>Salvar / compartilhar configuração</h2>
+  <div class="g2"><button id="expCopy" class="p">📋 Copiar código</button><button id="expFile">⬇ Baixar arquivo</button></div>
+  <label>Importar: cole o código aqui ou escolha o arquivo</label>
+  <textarea id="impText" rows="3" placeholder="cole o código da configuração" style="width:100%;background:#0e0c18;border:1px solid var(--l);color:var(--t);border-radius:10px;padding:11px;font:inherit"></textarea>
+  <div class="g2" style="margin-top:8px"><button id="impBtn" class="lime">Importar código</button><input type="file" id="impFile" accept=".json,application/json"></div>
+  <div class="st" style="margin-top:8px">Quem receber o código usa o mesmo visual. A sala (?room=) e o Firebase de cada pessoa são separados.</div>
+</div>
+</details>
 
 <script src="config.js"></script>
 <script src="sync.js"></script>
@@ -127,17 +133,30 @@ const push=(patch)=>{Object.assign(S,patch);DPSync.send(S)};
 const later=(ms,fn)=>timers.push(setTimeout(fn,ms));
 const clearT=()=>{timers.forEach(clearTimeout);timers=[]};
 
-function draw(){
-  const name=pick(NAMES);let kt=$("#ktype").value;if(kt==="random")kt=pick(["cpf","cpf","tel","email"]);
+function genKey(name,kt){
   const cpf=digits(3)+"."+digits(3)+"."+digits(3)+"-"+digits(2);
   let key=cpf;
   if(kt==="tel")key="("+(11+rnd(80))+") 9"+digits(4)+"-"+digits(4);
-  if(kt==="email"){const p=norm(name).split(" ");key=p[0]+"."+p[p.length-1]+digits(2)+"@email.com"}
-  push({dest:{name,cpf,bank:chosenBank()||pick(BANKS),keyType:kt,key}});
-  renderInfo();
+  if(kt==="email"){const q=norm(name).replace(/[^a-z ]/g,"").split(" ").filter(Boolean);key=(q[0]||"user")+(q.length>1?"."+q[q.length-1]:"")+digits(2)+"@email.com"}
+  return {cpf,keyType:kt,key};
 }
+function curKt(){let kt=$("#ktype").value;return kt==="random"?pick(["cpf","cpf","tel","email"]):kt}
+function setDest(name,keepBank,keepKt){
+  const kt=keepKt&&S.dest.keyType?S.dest.keyType:curKt();
+  const g=genKey(name,kt);
+  const bank=chosenBank()||(keepBank&&S.dest.bank)||pick(BANKS);
+  push({dest:Object.assign({name,bank},g)});
+  if($("#rname").value!==name)$("#rname").value=name;
+  $("#rkey").value=g.key;renderInfo();
+}
+function draw(){setDest(pick(NAMES),false,false)}
+let nameT;
+$("#rname").addEventListener("input",()=>{clearTimeout(nameT);nameT=setTimeout(()=>{const n=$("#rname").value.trim();if(n)setDest(n,true,false)},350)});
+$("#rkey").addEventListener("input",()=>{push({dest:Object.assign({},S.dest,{key:$("#rkey").value})});renderInfo()});
+$("#newkey").onclick=()=>{const n=$("#rname").value.trim()||S.dest.name;if(n)setDest(n,true,false)};
+$("#ktype").addEventListener("change",()=>{const n=$("#rname").value.trim()||S.dest.name;if(n)setDest(n,true,false)});
 function renderInfo(){
-  const d=S.dest;$("#destInfo").innerHTML=d.name?`<b>${d.name}</b><br>${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[d.keyType]}: ${d.key}<br><span style="color:var(--m)">${d.bank}</span>`:"Toque em sortear";
+  const d=S.dest;$("#destInfo").innerHTML=d.name?`${{cpf:"CPF",tel:"Telefone",email:"E-mail"}[d.keyType]||""} · ${d.bank||""}`:"";
 }
 async function copyKey(){
   try{await navigator.clipboard.writeText(S.dest.key)}catch(e){const t=document.createElement("textarea");t.value=S.dest.key;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}
