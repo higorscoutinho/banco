@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Painel Pix</title>
+<title>Painel Pix de zoeira</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--p:#7c3aed;--lime:#c8f542;--bg:#12101c;--c:#1c1930;--l:#2c2848;--t:#f2f0fb;--m:#9c97b8}
@@ -28,7 +28,7 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
 </style>
 </head>
 <body>
-<div class="top"><h1>Painel <b>Pix</b>/h1><div class="st"><i></i><span id="mode"></span></div></div>
+<div class="top"><h1>Painel <b>Pix</b> de zoeira</h1><div class="st"><i></i><span id="mode"></span></div></div>
 
 <div class="box">
   <h2>Aparelho</h2>
@@ -99,7 +99,7 @@ input,select{width:100%;background:#0e0c18;border:1px solid var(--l);color:var(-
 <script>
 const $=(s)=>document.querySelector(s);
 const NAMES=["Maria Souza","João Pereira","Ana Beatriz Lima","Carlos Eduardo Alves","Fernanda Rocha","Lucas Martins","Juliana Ferreira","Rafael Oliveira","Camila Barbosa","Bruno Henrique Costa","Patrícia Gomes","Thiago Ribeiro","Larissa Mendes","Gabriel Nunes","Aline Cardoso","Diego Moreira","Renata Araújo","Felipe Teixeira","Vanessa Duarte","Marcelo Batista","Priscila Campos","Rodrigo Farias","Bianca Freitas","Leandro Pinto"];
-const BANKS=["Banco Nubank S.A.","Banco Bradesco S.A.","Banco DIGI+","Banco Santander S.A.","Banco Itau Unibank S.A.","Banco Mercosul S.A.","Caixa Economica Federal"];
+const BANKS=["Banco Zoeira S.A.","Banco Pastel","Banco Tapioca","Banco Cuscuz S.A.","Banco Mandiocão","Banco Coxinha","Banco Pão de Queijo"];
 const rnd=(n)=>Math.floor(Math.random()*n), pick=(a)=>a[rnd(a.length)];
 const digits=(n)=>Array.from({length:n},()=>rnd(10)).join("");
 const norm=(s)=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
