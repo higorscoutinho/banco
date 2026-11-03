@@ -4,6 +4,6 @@
 //   "https://doacoes-obs-default-rtdb.firebaseio.com"
 // Se deixar vazio, painel e overlay só se falam no MESMO navegador (modo teste).
 window.DIGIPLUS = {
-  databaseURL: "",
+  databaseURL: "https://doacoes-obs-default-rtdb.firebaseio.com",
   basePath: "digiplus"
 };
